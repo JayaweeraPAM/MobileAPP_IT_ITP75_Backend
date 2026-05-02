@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { store } from '../data/store-mongo.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { getMyInstitute, getAllInstitutes, getInstituteById, createInstituteBlocked, updateInstitute } from '../controllers/institutesController.js';
 
 export const institutesRouter = Router();
 
@@ -12,118 +13,21 @@ async function getTutorMemberCount(instituteId) {
 }
 
 // ─── PUBLIC: List all approved institutes ────────────────────────────────────
-institutesRouter.get('/', async (req, res) => {
-  try {
-    const institutes = (await store.institutes.get()) || [];
-    const validInstituteIds = new Set(institutes.map(i => i.id));
-
-    const tutors = (await store.tutors.get()) || [];
-    const instituteTutors = tutors.filter(t => t.instituteId && validInstituteIds.has(t.instituteId));
-    
-    const totalTutors = instituteTutors.length;
-    
-    const uniqueSubjects = new Set();
-    instituteTutors.forEach(t => {
-      if (Array.isArray(t.subjects)) {
-        t.subjects.forEach(s => {
-          const subjectName = typeof s === 'object' ? s.subject : s;
-          if (subjectName) {
-            uniqueSubjects.add(subjectName.toLowerCase().trim());
-          }
-        });
-      }
-    });
-    
-    res.json({ institutes, totalTutors, totalSubjects: uniqueSubjects.size });
-  } catch (err) {
-    console.error('List institutes error:', err);
-    res.status(500).json({ error: 'Failed to fetch institutes' });
-  }
-});
+institutesRouter.get('/', getAllInstitutes);
 
 // ─── PUBLIC: Get a single institute + its tutors ─────────────────────────────
 institutesRouter.get('/:id', async (req, res, next) => {
   if (['manager-registrations', 'my-institute', 'requests', 'my'].includes(req.params.id)) {
     return next('route');
   }
-  try {
-    const institute = await store.institutes.getById(req.params.id);
-    if (!institute) return res.status(404).json({ error: 'Institute not found' });
-
-    // Fetch tutors that belong to this institute
-    const tutors = (await store.tutors.get()) || [];
-    const members = tutors.filter(t => t.instituteId === req.params.id);
-    const users   = await store.users.get() || [];
-
-    const tutorList = members.map(t => {
-      // Tutor records store the user's UUID in t.id (no separate t.userId field)
-      const u = users.find(u => u.id === t.id);
-      return {
-        id: t.id,
-        name: u?.fullName || t.fullName || 'Unknown',
-        photoUrl: t.photoUrl || t.photo || '',
-        subjects: t.subjects || [],
-        hourlyRate: t.hourlyRate || t.rate || 0,
-        location: t.location || '',
-        avgRating: t.avgRating || 0,
-        ratingCount: t.ratingCount || 0,
-        instituteTimetable: t.instituteTimetable || '',
-      };
-    });
-
-    res.json({ institute, tutors: tutorList });
-  } catch (err) {
-    console.error('Get institute error:', err);
-    res.status(500).json({ error: 'Failed to fetch institute' });
-  }
+  return getInstituteById(req, res);
 });
 
 // ─── BLOCKED: Direct admin creation disabled ─────────────────────────────────────────
-// Institutes can only be created through:
-//   a) The institute manager registration flow (/institute/register)
-//   b) Admins approving 4+ tutor requests (/api/institutes/requests/approve)
-institutesRouter.post('/', authMiddleware, async (req, res) => {
-  return res.status(405).json({
-    error: 'Direct institute creation is disabled.',
-    info: 'Institutes are created by approving tutor join requests (4+ tutors required) or through the institute manager registration form.',
-  });
-});
+institutesRouter.post('/', authMiddleware, createInstituteBlocked);
 
 // ─── MANAGER-ONLY: Update institute via admin panel (blocked for admins) ─────────────
-// Use PUT /:id/settings instead (manager-only route)
-institutesRouter.put('/:id', authMiddleware, async (req, res) => {
-  try {
-    const institute = await store.institutes.getById(req.params.id);
-    if (!institute) return res.status(404).json({ error: 'Institute not found' });
-
-    // Only the institute manager (creator) can edit — admins cannot bypass this
-    const isManager = institute.managerId === req.user.id;
-    if (!isManager) {
-      return res.status(403).json({
-        error: 'Only the institute manager (creator) can edit institute details.',
-      });
-    }
-
-    const { name, description, location, timetable, photo } = req.body;
-    const updates = {
-      ...(name        !== undefined && { name: name.trim() }),
-      ...(description !== undefined && { description: description.trim() }),
-      ...(location    !== undefined && { location: location.trim() }),
-      ...(timetable   !== undefined && { timetable: timetable.trim() }),
-      ...(photo       !== undefined && { photo }),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const ok = await store.institutes.updateOne(req.params.id, updates);
-    if (!ok) return res.status(404).json({ error: 'Institute not found' });
-
-    const updated = await store.institutes.getById(req.params.id);
-    res.json({ success: true, institute: updated });
-  } catch (err) {
-    console.error('Update institute error:', err);
-    res.status(500).json({ error: 'Failed to update institute' });
-  }
-});
+institutesRouter.put('/:id', authMiddleware, updateInstitute);
 
 // ─── ADMIN: Delete an institute ───────────────────────────────────────────────
 institutesRouter.delete('/:id', authMiddleware, async (req, res) => {
@@ -264,25 +168,7 @@ institutesRouter.patch('/manager-registrations/:requestId/reject', authMiddlewar
 });
 
 // ─── INSTITUTE MANAGER: Get own institute ─────────────────────────────────────
-institutesRouter.get('/my-institute', authMiddleware, async (req, res) => {
-  try {
-    if (req.user.role !== 'institute_manager') return res.status(403).json({ error: 'Institute managers only' });
-
-    const institutes = (await store.institutes.get()) || [];
-    const institute = institutes.find(i => i.managerId === req.user.id);
-    if (!institute) return res.status(404).json({ error: 'No institute linked to your account yet' });
-
-    // Get pending join requests from tutors
-    const joinRequests = (await store.instituteJoinRequests?.get?.() || []).filter(
-      r => r.instituteId === institute.id && (r.status === 'PENDING' || r.status === 'pending')
-    );
-
-    res.json({ institute, joinRequests });
-  } catch (err) {
-    console.error('Get my institute error:', err);
-    res.status(500).json({ error: 'Failed to fetch institute' });
-  }
-});
+institutesRouter.get('/my-institute', authMiddleware, getMyInstitute);
 
 // ─── ADMIN: Get all institute requests ────────────────────────────────────────
 institutesRouter.get('/requests/all', authMiddleware, async (req, res) => {

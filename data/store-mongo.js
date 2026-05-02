@@ -69,7 +69,7 @@ export const store = {
         { id },
         { $set: updates }
       );
-      return result.modifiedCount > 0;
+      return result.matchedCount > 0;
     },
     insertOne: async (user) => {
       const db = await getDB();
@@ -393,7 +393,7 @@ export const store = {
         { id },
         { $set: updates }
       );
-      return result.modifiedCount > 0;
+      return result.matchedCount > 0;
     },
     deleteOne: async (id) => {
       const db = await getDB();
