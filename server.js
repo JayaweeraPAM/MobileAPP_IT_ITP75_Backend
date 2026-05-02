@@ -23,6 +23,7 @@ import { institutesRouter } from './routes/institutes.js';
 import { authMiddleware } from './middleware/auth.js';
 import { store } from './data/store-mongo.js';
 import { aiChatRouter } from './routes/ai-chat.js';
+import { uploadRouter } from './routes/upload.js';
 import { connectDB, disconnectDB } from './config/mongodb.js';
 import { initializeRoleDirectories, organizeUsersByRole, exportUserSummary } from './data/organize-by-role.js';
 
@@ -381,6 +382,30 @@ app.use('/api/subscription', subscriptionRouter);
 app.use('/api/bookings', bookingsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/institutes', institutesRouter);
+
+// ─── Ephemeral fallback and direct file serving for uploaded files ────────────
+app.get('/uploads/:filename', async (req, res, next) => {
+  try {
+    const filePath = path.join(__dirname, 'uploads', req.params.filename);
+    if (fsSync.existsSync(filePath)) {
+      return res.sendFile(path.resolve(filePath));
+    }
+    const fileDoc = await store.uploadedFiles.getById(req.params.filename);
+    if (fileDoc && fileDoc.base64Content) {
+      if (!fsSync.existsSync(path.dirname(filePath))) {
+        fsSync.mkdirSync(path.dirname(filePath), { recursive: true });
+      }
+      fsSync.writeFileSync(filePath, Buffer.from(fileDoc.base64Content, 'base64'));
+      return res.sendFile(path.resolve(filePath));
+    }
+  } catch (err) {
+    console.error('Fallback static file server error:', err);
+  }
+  next();
+});
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/upload', uploadRouter);
+app.use('/api/upload-image', uploadRouter);
 
 app.get('/api/tutor/chat/requests', authMiddleware, async (req, res) => {
   if (req.user.role !== 'tutor') {

@@ -464,5 +464,24 @@ export const store = {
       await db.collection('institute_join_requests').deleteOne({ id });
     },
   },
+
+  // ── Uploaded Files for Ephemeral Persistence ───────────────────────────────
+  uploadedFiles: {
+    get: async () => {
+      const db = await getDB();
+      const docs = await db.collection('uploaded_files').find({}).toArray();
+      return convertMongoDocs(docs);
+    },
+    getById: async (id) => {
+      const db = await getDB();
+      const doc = await db.collection('uploaded_files').findOne({ id });
+      return convertMongoDoc(doc);
+    },
+    insertOne: async (file) => {
+      const db = await getDB();
+      await db.collection('uploaded_files').insertOne(file);
+      return { ...file };
+    },
+  },
 };
 

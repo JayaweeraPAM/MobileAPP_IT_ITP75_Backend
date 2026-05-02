@@ -1,65 +1,63 @@
 [
   {
-    "id": "c9f963b6-0dd6-492f-8e4a-9c451b381cc0",
-    "email": "tutor@gmail.com",
-    "passwordHash": "$2a$10$IY8hC1PRAh4TR572QZQkE.P69SU.UBwLJtyzFp4EJj2Fzi6WoJOjS",
-    "fullName": "tutor@gmail.com",
+    "id": "468f7b29-3018-4596-9815-4bd74850c1d1",
+    "email": "s@gmail.com",
+    "passwordHash": "$2a$10$wyatz0ktBTJLuE1AdJaOcuWgTPW1qCqa8zQCe76sBzIHyMzdbNnnO",
+    "fullName": "thissa jana nayaka",
     "role": "tutor",
-    "createdAt": "2026-02-28T14:25:05.962Z",
-    "_id": "69f5ab6ce37ecac2800edde2"
+    "createdAt": "2026-05-01T16:53:58.604Z",
+    "updatedAt": "2026-05-02T07:10:59.932Z",
+    "_id": "69f4daa6e5dd6722eabae509"
   },
   {
-    "id": "42d1b286-8cf4-4dcd-a706-0a6bb899a2ef",
-    "email": "tutor1@gmail.com",
-    "passwordHash": "$2a$10$GrpxEz4UqVLtOgYpbCNAj.CRncNNq2Pm7UzAr0dT0/DjoY8hivgyi",
-    "fullName": "tutor1",
+    "id": "4c44e898-e0cc-497e-b224-69387856dfef",
+    "email": "prasanna@gmail.com",
+    "passwordHash": "$2a$10$DYm5mPCqeX6sb.lJeUD1UOUPQBiGbKS8z7Q15n7kXE3e8vyrVfT8u",
+    "fullName": "prasanna baddewithana",
     "role": "tutor",
-    "createdAt": "2026-03-01T00:24:37.636Z",
-    "_id": "69f5ab6ce37ecac2800edde3"
+    "createdAt": "2026-05-01T16:55:21.830Z",
+    "updatedAt": "2026-05-01T17:14:13.934Z",
+    "_id": "69f4daf9e5dd6722eabae50b"
   },
   {
-    "id": "cd5d82f7-40aa-42bf-b3b7-157509cd273b",
-    "email": "methvanjayaweera@gmail.com",
-    "passwordHash": "$2a$10$TC0d/DAuqXuCMMuln5pOr.OgKngzidqji12gJamAtzg/FiqQhm47S",
-    "fullName": "methvan",
-    "role": "tutor",
-    "createdAt": "2026-03-01T01:30:56.168Z",
-    "_id": "69f5ab6ce37ecac2800edde4"
+    "id": "47b218d4-2dc2-4cec-9c09-de0d2d28e0a1",
+    "email": "sasip@gmail.com",
+    "passwordHash": "$2a$10$78208xgK3abQIOXi82KIWer6yia.kT4jcKzMEdwNURH3Dekn1DDvO",
+    "fullName": "Dr. Amith Pussella",
+    "role": "institute_manager",
+    "isInstituteManager": true,
+    "instituteRegistrationNo": "ed/2024",
+    "instituteName": "Sasip Institute",
+    "createdAt": "2026-05-01T17:05:54.186Z",
+    "_id": "69f4dd72e5dd6722eabae513"
   },
   {
-    "id": "71f9cce3-3f48-4eda-883f-032735dcd548",
-    "email": "achintha@gmail.com",
-    "passwordHash": "$2a$10$YCsepyFT60gK2AzCoFta/OZyt8H4txsCxOf.9FYy1ty2BeAyii2WO",
-    "fullName": "achintha",
+    "id": "0bce5c30-a4db-43ed-bf8c-51e8edfea4ae",
+    "email": "ruwan@gmail.com",
+    "passwordHash": "$2a$10$eKPOTBS.bDrUll55NiYyW.XG0CuhLbjPwHkcWVexXVmI1vagDsfRS",
+    "fullName": "Ruwan Darshana",
     "role": "tutor",
-    "createdAt": "2026-03-01T02:04:54.361Z",
-    "_id": "69f5ab6ce37ecac2800edde6"
+    "createdAt": "2026-05-01T17:17:23.814Z",
+    "updatedAt": "2026-05-01T17:19:45.933Z",
+    "_id": "69f4e023e5dd6722eabae51a"
   },
   {
-    "id": "c65b62cd-6a95-45d5-9032-92d0462ea863",
-    "email": "testtutor@gmail.com",
-    "passwordHash": "$2a$10$AaXXO0uj6gKOMxRb6Wpuyua4R/0ISf7fmvUDENTgw3eN5.LmfCsA.",
-    "fullName": "testtutor",
+    "id": "a42acd05-bdc8-4989-bb5f-47153b9d1116",
+    "email": "anurada@gmail.com",
+    "passwordHash": "$2a$10$PDsAceM7LOPTrpUwQpst1ewMBMdLRuHHgkRvHAjWFsNJ0nR1J4u56",
+    "fullName": "anurada",
     "role": "tutor",
-    "createdAt": "2026-03-01T09:40:30.129Z",
-    "_id": "69f5ab6ce37ecac2800edde7"
+    "createdAt": "2026-05-01T17:18:55.061Z",
+    "updatedAt": "2026-05-01T18:38:53.422Z",
+    "_id": "69f4e07fe5dd6722eabae51c"
   },
   {
-    "id": "2d5e2263-278a-4695-af78-fe6358bcd081",
-    "email": "akilshehan760@gmail.com",
-    "passwordHash": "$2a$10$X8FMoD.UFNqYg0nWJeCCLeelBvpYHkeCWF.QBLBI4rrX4rodN1/M.",
-    "fullName": "Shehan",
+    "id": "4e92c043-c22f-4778-a6cb-0291556e271f",
+    "email": "charitha@gmail.com",
+    "passwordHash": "$2a$10$Eu/ne0wbVPxLUvl3WBP79.0ZGad2q3TGGNjNtzF9tUuTihABpIWLO",
+    "fullName": "charitha dissanayake",
     "role": "tutor",
-    "createdAt": "2026-03-01T11:32:35.341Z",
-    "_id": "69f5ab6ce37ecac2800edde8"
-  },
-  {
-    "id": "34adc5ea-018d-4955-8b28-3f83c2dd37c3",
-    "email": "achinthalakshan275@gmail.com",
-    "passwordHash": "$2a$10$rwEjGADs55.evBozmgfvcO84FD5wcTzcqGI.10/L7RbLRAdDsiGGC",
-    "fullName": "Achintha",
-    "role": "tutor",
-    "createdAt": "2026-03-01T15:05:19.310Z",
-    "_id": "69f5ab6ce37ecac2800edde9"
+    "createdAt": "2026-05-01T18:10:29.012Z",
+    "_id": "69f4ec95e5dd6722eabae52f"
   }
 ]
