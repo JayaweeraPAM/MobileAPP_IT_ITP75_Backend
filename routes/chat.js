@@ -285,3 +285,50 @@ chatRouter.get('/threads/:threadId/messages', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
+
+chatRouter.patch('/threads/:threadId/messages/:messageId', async (req, res) => {
+  try {
+    const { threadId, messageId } = req.params;
+    const { content } = req.body;
+    if (!content || typeof content !== 'string') {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
+    const threads = await store.chatThreads.get();
+    const thread = threads.find((t) => t.id === threadId);
+    if (!thread) {
+      return res.status(404).json({ error: 'Thread not found' });
+    }
+
+    if (thread.studentId !== req.user.id && thread.tutorId !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const messages = await store.chatMessages.get();
+    const msg = messages.find((m) => m.id === messageId);
+    if (!msg) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    if (msg.senderId !== req.user.id) {
+      return res.status(403).json({ error: 'Only sender can edit their own message' });
+    }
+
+    const trimmedContent = content.trim().slice(0, 2000);
+    const updated = await store.chatMessages.updateOne(messageId, { content: trimmedContent, isEdited: true });
+    
+    if (!updated) {
+      return res.status(500).json({ error: 'Failed to update message in db' });
+    }
+
+    const updatedMessage = { ...msg, content: trimmedContent, isEdited: true };
+
+    const io = req.app.get('io');
+    io?.to(`thread:${threadId}`).emit('messageEdited', { message: updatedMessage });
+
+    res.json({ success: true, message: updatedMessage });
+  } catch (err) {
+    console.error('Edit message error:', err);
+    res.status(500).json({ error: 'Failed to edit message' });
+  }
+});

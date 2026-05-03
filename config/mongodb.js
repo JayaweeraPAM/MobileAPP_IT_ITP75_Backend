@@ -218,7 +218,10 @@ async function createIndexes(database) {
     await database.collection('chat_messages').createIndex({ senderId: 1 });
     
     // Subscriptions indexes
-    await database.collection('subscriptions').createIndex({ tutorId: 1 }, { unique: true });
+    try {
+      await database.collection('subscriptions').dropIndex('tutorId_1');
+    } catch (err) {}
+    await database.collection('subscriptions').createIndex({ tutorId: 1 });
     
     // Tutor reviews indexes
     await database.collection('tutor_reviews').createIndex({ tutorId: 1 });

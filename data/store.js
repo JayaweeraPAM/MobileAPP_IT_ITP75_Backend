@@ -49,6 +49,16 @@ export const store = {
   chatMessages: {
     get: () => readJson('chat_messages') || [],
     set: (data) => writeJson('chat_messages', data),
+    updateOne: (id, updates) => {
+      let msgs = readJson('chat_messages') || [];
+      let idx = msgs.findIndex(m => m.id === id);
+      if (idx >= 0) {
+        msgs[idx] = { ...msgs[idx], ...updates };
+        writeJson('chat_messages', msgs);
+        return true;
+      }
+      return false;
+    }
   },
   tutorProfileRequests: {
     get: () => readJson('tutor_profile_requests') || [],

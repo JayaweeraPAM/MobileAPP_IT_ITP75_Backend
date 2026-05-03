@@ -28,7 +28,7 @@ tutorRegisterRouter.get('/search', async (req, res) => {
     const activeSubscriptionIds = new Set();
     const now = new Date();
     for (const sub of subscriptions) {
-      if (sub?.tutorId && new Date(sub.expiresAt) > now) {
+      if (sub?.tutorId && new Date(sub.expiresAt) > now && sub.status !== 'rejected') {
         activeSubscriptionIds.add(sub.tutorId);
       }
     }

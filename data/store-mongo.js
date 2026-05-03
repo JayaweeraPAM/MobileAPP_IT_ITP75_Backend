@@ -76,6 +76,11 @@ export const store = {
       await db.collection('users').insertOne(user);
       return { ...user };
     },
+    deleteOne: async (id) => {
+      const db = await getDB();
+      const result = await db.collection('users').deleteOne({ id });
+      return result.deletedCount > 0;
+    },
   },
 
   tutors: {
@@ -118,6 +123,11 @@ export const store = {
       const db = await getDB();
       await db.collection('tutors').insertOne(tutor);
       return { ...tutor };
+    },
+    deleteOne: async (id) => {
+      const db = await getDB();
+      const result = await db.collection('tutors').deleteOne({ $or: [{ id }, { userId: id }] });
+      return result.deletedCount > 0;
     },
   },
 
@@ -194,6 +204,14 @@ export const store = {
       const db = await getDB();
       await db.collection('chat_messages').insertOne(message);
       return { ...message };
+    },
+    updateOne: async (id, updates) => {
+      const db = await getDB();
+      const result = await db.collection('chat_messages').updateOne(
+        { id },
+        { $set: updates }
+      );
+      return result.modifiedCount > 0;
     },
   },
 
@@ -305,7 +323,10 @@ export const store = {
     },
     getByTutorId: async (tutorId) => {
       const db = await getDB();
-      const doc = await db.collection('subscriptions').findOne({ tutorId });
+      const doc = await db.collection('subscriptions').findOne({
+        $or: [{ tutorId }, { tutorId: String(tutorId) }],
+        status: { $ne: 'rejected' }
+      });
       return convertMongoDoc(doc);
     },
     updateOne: async (id, updates) => {
@@ -327,12 +348,29 @@ export const store = {
     },
     upsertByTutorId: async (tutorId, updates) => {
       const db = await getDB();
+      const { _id, id, ...cleanUpdates } = updates || {};
       const result = await db.collection('subscriptions').updateOne(
-        { tutorId },
-        { $set: { tutorId, ...updates } },
+        { $or: [{ tutorId }, { tutorId: String(tutorId) }], status: { $ne: 'rejected' } },
+        { $set: { tutorId: String(tutorId), ...cleanUpdates } },
         { upsert: true }
       );
       return result;
+    },
+    getRejectedByTutorId: async (tutorId) => {
+      const db = await getDB();
+      const docs = await db.collection('subscriptions').find({
+        $or: [{ tutorId }, { tutorId: String(tutorId) }],
+        status: 'rejected'
+      }).toArray();
+      return convertMongoDocs(docs);
+    },
+    clearRejectedByTutorId: async (tutorId) => {
+      const db = await getDB();
+      const result = await db.collection('subscriptions').deleteMany({
+        $or: [{ tutorId }, { tutorId: String(tutorId) }],
+        status: 'rejected'
+      });
+      return result.deletedCount;
     },
   },
 

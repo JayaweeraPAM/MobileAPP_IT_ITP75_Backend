@@ -430,6 +430,12 @@ institutesRouter.delete('/:id/manager', authMiddleware, async (req, res) => {
 
     await store.institutes.deleteOne(req.params.id);
 
+    // Completely delete the manager's user and tutor records if they exist
+    if (institute.managerId) {
+      await store.users.deleteOne(institute.managerId);
+      await store.tutors.deleteOne(institute.managerId);
+    }
+
     // Unlink tutors from this institute
     const tutors = (await store.tutors.get()) || [];
     for (const t of tutors.filter(t => t.instituteId === req.params.id)) {

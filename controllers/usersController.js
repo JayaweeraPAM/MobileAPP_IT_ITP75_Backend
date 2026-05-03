@@ -47,3 +47,22 @@ export async function getUserProfile(req, res) {
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
 }
+
+export async function deleteMe(req, res) {
+  try {
+    const user = await store.users.getById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const role = (user.role || '').toLowerCase();
+    if (role === 'tutor' || role === 'tutor_pending') {
+      await store.tutors.deleteOne(req.user.id);
+    }
+
+    await store.users.deleteOne(req.user.id);
+
+    res.json({ success: true, message: 'Account deleted successfully' });
+  } catch (err) {
+    console.error('Delete me error:', err);
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+}

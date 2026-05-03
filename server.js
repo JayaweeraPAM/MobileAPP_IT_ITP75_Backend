@@ -207,7 +207,7 @@ app.get('/api/tutors', async (req, res) => {
       if (sub?.tutorId) {
         const expiresAt = new Date(sub.expiresAt);
         const now = new Date();
-        if (expiresAt > now) {
+        if (expiresAt > now && sub.status !== 'rejected') {
           activeSubscriptionIds.add(sub.tutorId);
         }
       }
@@ -526,6 +526,29 @@ io.on('connection', async (socket) => {
     
     console.log(`[Chat] Broadcasting message to thread ${threadId}, total messages: ${updatedMessages.length}`);
     socket.broadcast.to(`thread:${threadId}`).emit('newMessage', { message });
+  });
+
+  socket.on('editMessage', async ({ threadId, messageId, content }) => {
+    if (!threadId || !messageId || !content || typeof content !== 'string') return;
+    
+    console.log(`[Chat] User ${socket.userId} editing message ${messageId} in thread ${threadId}`);
+
+    const threads = await store.chatThreads.get();
+    const thread = threads.find((t) => t.id === threadId);
+    if (!thread) return;
+    if (thread.studentId !== socket.userId && thread.tutorId !== socket.userId) return;
+
+    const messages = await store.chatMessages.get();
+    const msg = messages.find((m) => m.id === messageId);
+    if (!msg || msg.senderId !== socket.userId) return;
+
+    const trimmedContent = content.trim().slice(0, 2000);
+    const updated = await store.chatMessages.updateOne(messageId, { content: trimmedContent, isEdited: true });
+    
+    if (updated) {
+      const updatedMessage = { ...msg, content: trimmedContent, isEdited: true };
+      io.to(`thread:${threadId}`).emit('messageEdited', { message: updatedMessage });
+    }
   });
 
   socket.on('typingStart', async ({ threadId }) => {

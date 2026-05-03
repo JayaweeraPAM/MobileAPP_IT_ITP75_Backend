@@ -158,3 +158,54 @@ subscriptionRouter.get('/:tutorId', async (req, res) => {
     res.status(500).json({ error: 'Failed to get subscription' });
   }
 });
+
+// DELETE /api/subscription/cancel — cancel current subscription and save as rejected
+subscriptionRouter.delete('/cancel', authMiddleware, async (req, res) => {
+  try {
+    const tutorId = req.user?.id || req.user?._id;
+    console.log(`[Subscription/Cancel] Canceling active subscription for tutor ${tutorId}`);
+    
+    if (!tutorId) {
+      return res.status(400).json({ error: 'Tutor ID is missing from user session' });
+    }
+
+    const sub = await store.subscriptions.getByTutorId(tutorId);
+    console.log(`[Subscription/Cancel] Active subscription found:`, sub);
+
+    if (!sub) {
+      return res.status(404).json({ error: 'No active subscription found to cancel' });
+    }
+
+    // Set status to rejected
+    const { _id, id, ...subWithoutId } = sub || {};
+    await store.subscriptions.upsertByTutorId(tutorId, { ...subWithoutId, status: 'rejected' });
+    res.json({ success: true, message: 'Subscription cancelled successfully and moved to history' });
+  } catch (err) {
+    console.error('Cancel subscription error:', err);
+    res.status(500).json({ error: 'Failed to cancel subscription' });
+  }
+});
+
+// GET /api/subscription/history — fetch rejected subscriptions
+subscriptionRouter.get('/history/rejected', authMiddleware, async (req, res) => {
+  try {
+    const tutorId = req.user.id;
+    const list = await store.subscriptions.getRejectedByTutorId(tutorId);
+    res.json({ success: true, history: list });
+  } catch (err) {
+    console.error('Fetch history error:', err);
+    res.status(500).json({ error: 'Failed to fetch subscription history' });
+  }
+});
+
+// DELETE /api/subscription/history — clear rejected subscriptions
+subscriptionRouter.delete('/history/rejected', authMiddleware, async (req, res) => {
+  try {
+    const tutorId = req.user.id;
+    const count = await store.subscriptions.clearRejectedByTutorId(tutorId);
+    res.json({ success: true, message: 'History cleared successfully', clearedCount: count });
+  } catch (err) {
+    console.error('Clear history error:', err);
+    res.status(500).json({ error: 'Failed to clear history' });
+  }
+});
